@@ -150,7 +150,7 @@ function Section({ id, title, subtitle, children }:{ id:string; title:string; su
 // =============================
 // Navigation
 // =============================
-function Nav({ open, setOpen }:{ open:boolean; setOpen:(v:boolean)=>void }){
+export function Nav({ open, setOpen }:{ open:boolean; setOpen:(v:boolean)=>void }){
   const items = [
     { href: "#articles", label: "Статьи" },
     { href: "#courses", label: "Курсы" },
