@@ -1,3 +1,4 @@
+"use client";
 import { useEffect, useMemo, useState, type ElementType, type ReactNode } from "react";
 import { motion } from "framer-motion";
 import { Menu, X, ExternalLink, Share2, Pencil, Plus, Save, Trash2, Search } from "lucide-react";
@@ -334,7 +335,7 @@ function Articles({ items }:{ items:Article[] }){
               </div>
               <div className="flex items-center justify-between pt-2 text-xs text-neutral-600">
                 <span>{fmtDate(a.date)}</span>
-                <a className="inline-flex items-center gap-1 hover:underline" href={tgShareLink({ url: location.href + '#articles', text: a.title })} target="_blank" rel="noreferrer">
+                <a className="inline-flex items-center gap-1 hover:underline" href={tgShareLink({ url: (typeof window !== "undefined" ? window.location.href : "") + '#articles', text: a.title })} target="_blank" rel="noreferrer">
                   <Share2 size={14}/> Поделиться
                 </a>
               </div>
@@ -366,7 +367,7 @@ function Courses({ items }:{ items:Course[] }){
               <p className="text-sm text-neutral-700">{c.summary}</p>
               <div className="flex gap-2">
                 <Button as="a" href="#" className="hover:bg-black hover:text-white">Силлабус</Button>
-                <Button as="a" href={tgShareLink({ url: location.href + '#courses', text: c.title })} target="_blank" className="hover:bg-black hover:text-white"><Share2 size={14}/> Поделиться</Button>
+                <Button as="a" href={tgShareLink({ url: (typeof window !== "undefined" ? window.location.href : "") + '#courses', text: c.title })} target="_blank" className="hover:bg-black hover:text-white"><Share2 size={14}/> Поделиться</Button>
               </div>
             </div>
           </motion.div>
@@ -388,7 +389,7 @@ function Blog({ items }:{ items:Post[] }){
             </div>
             <div className="flex items-center justify-between gap-4 md:justify-end">
               <span className="text-xs text-neutral-600">{fmtDate(p.date)}</span>
-              <a className="inline-flex items-center gap-1 text-sm hover:underline" href={tgShareLink({ url: location.href + '#blog', text: p.title })} target="_blank" rel="noreferrer">
+              <a className="inline-flex items-center gap-1 text-sm hover:underline" href={tgShareLink({ url: (typeof window !== "undefined" ? window.location.href : "") + '#blog', text: p.title })} target="_blank" rel="noreferrer">
                 <Share2 size={14}/> В Telegram
               </a>
             </div>
@@ -414,7 +415,7 @@ function About(){
           </div>
           <div className="rounded-2xl border border-black p-3 text-sm text-neutral-700 bg-[rgba(0,0,0,0.02)]">
             <p className="mb-1 font-semibold">Виджет Telegram (встраивание постов)</p>
-            <p>Для продакшена подключите скрипт <code>https://telegram.org/js/telegram-widget.js</code> и используйте тег <code>&lt;div class="telegram-post" data-telegram-post="CHANNEL/POST_ID"&gt;</code>.</p>
+            <p>Для продакшена подключите скрипт <code>https://telegram.org/js/telegram-widget.js</code> и используйте тег <code>&lt;div class=&quot;telegram-post&quot; data-telegram-post=&quot;CHANNEL/POST_ID&quot;&gt;</code>.</p>
           </div>
         </div>
         <div className="overflow-hidden rounded-3xl border border-black">
