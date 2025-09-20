@@ -4,6 +4,8 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { motion } from 'framer-motion'
 
+import Header from './components/Header'
+
 /************************************
  * DEBUG FIX (v10.2)
  * Target: sporadic "TypeError: Cannot read properties of undefined (reading 'source')"
@@ -392,19 +394,7 @@ export default function Page() {
 
   return (
     <div className="min-h-dvh bg-white text-neutral-900 selection:bg-black selection:text-white">
-      {/* NAV */}
-      <header className="sticky top-0 z-50 border-b border-black/10 bg-white/70 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-          <a href="#top" className="font-semibold tracking-tight">4I.R22.01</a>
-          <nav className="hidden gap-6 text-sm md:flex">
-            <a href="#about" className="opacity-70 transition hover:opacity-100">О курсе</a>
-            <a href="#program" className="opacity-70 transition hover:opacity-100">Программа</a>
-            <a href="#team" className="opacity-70 transition hover:opacity-100">Команда</a>
-            <a href="#apply" className="opacity-70 transition hover:opacity-100">Запись</a>
-          </nav>
-          <a href="#apply" className="rounded-xl border border-black/10 px-3 py-1.5 text-sm transition hover:bg-black hover:text-white">Поступить</a>
-        </div>
-      </header>
+      <Header />
 
       {/* HERO */}
       <section id="top" className="relative overflow-hidden">
