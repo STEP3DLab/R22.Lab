@@ -3,6 +3,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { motion } from 'framer-motion'
+import TestPanel from '../components/TestPanel'
 
 import Header from './components/Header'
 
@@ -145,35 +146,6 @@ function supportsWebGLSafely() {
   } catch {
     return false
   }
-}
-
-function TestPanel({ mounted, webglOk, canvasReady, firstFrameSeen, firstFrameCount, glInfo, sceneVisible, cbIsFunc, refAttached, ioAvailable }) {
-  const items = [
-    { name: 'Клиентская среда', pass: mounted },
-    { name: 'Поддержка WebGL', pass: webglOk },
-    { name: 'Сцена во вьюпорте', pass: sceneVisible },
-    { name: 'Ref присвоен DOM‑элементу', pass: refAttached },
-    { name: 'IntersectionObserver доступен', pass: ioAvailable },
-    { name: 'Canvas смонтирован', pass: canvasReady },
-    { name: 'Первый кадр отрисован (RAF)', pass: firstFrameSeen },
-    { name: 'onFirstFrame — функция', pass: cbIsFunc },
-    { name: 'onFirstFrame вызван ровно 1 раз', pass: firstFrameCount === 1 },
-    { name: `WebGL контекст: ${glInfo || 'n/a'}`, pass: !!glInfo && glInfo !== 'n/a' },
-    { name: 'GL info после ready', pass: canvasReady ? !!glInfo : true },
-  ]
-  return (
-    <div className="mt-4 grid gap-2 rounded-2xl border border-black/10 p-4 text-xs">
-      <div className="font-medium">Проверки окружения</div>
-      <ul className="grid gap-1">
-        {items.map((t) => (
-          <li key={t.name} className="flex items-center justify-between">
-            <span>{t.name}</span>
-            <span className={t.pass ? 'text-green-600' : 'text-red-600'}>{t.pass ? 'OK' : 'FAIL'}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  )
 }
 
 /**************** DATA ****************/
@@ -385,6 +357,9 @@ export default function Page() {
   const ioAvailable = typeof window !== 'undefined' && 'IntersectionObserver' in window
   const refAttached = !!sceneWrapRef.current
 
+  const shouldRenderTestPanel =
+    process.env.NODE_ENV !== 'production' || process.env.NEXT_PUBLIC_SHOW_DIAGNOSTICS === 'true'
+
   const applyStats = [
     { label: 'Стоимость', value: lead.price },
     { label: 'Продолжительность', value: lead.duration },
@@ -456,20 +431,22 @@ export default function Page() {
       </section>
 
       {/* Runtime tests */}
-      <div className="mx-auto max-w-6xl px-4">
-        <TestPanel
-          mounted={mounted}
-          webglOk={webglOk}
-          canvasReady={canvasReady}
-          firstFrameSeen={firstFrameSeen}
-          firstFrameCount={firstFrameCount}
-          glInfo={glInfo}
-          sceneVisible={sceneVisible}
-          cbIsFunc={cbIsFunc}
-          refAttached={refAttached}
-          ioAvailable={ioAvailable}
-        />
-      </div>
+      {shouldRenderTestPanel && (
+        <div className="mx-auto max-w-6xl px-4">
+          <TestPanel
+            mounted={mounted}
+            webglOk={webglOk}
+            canvasReady={canvasReady}
+            firstFrameSeen={firstFrameSeen}
+            firstFrameCount={firstFrameCount}
+            glInfo={glInfo}
+            sceneVisible={sceneVisible}
+            cbIsFunc={cbIsFunc}
+            refAttached={refAttached}
+            ioAvailable={ioAvailable}
+          />
+        </div>
+      )}
 
       <Divider />
 
