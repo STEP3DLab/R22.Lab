@@ -18,6 +18,11 @@ npm run build   # production-сборка
 npm run lint    # ESLint (Next.js core-web-vitals)
 ```
 
+## Переменные окружения
+
+- `NEXT_PUBLIC_SHOW_DIAGNOSTICS` — принудительно включает диагностическую панель. По умолчанию она отображается в dev/test и
+  скрыта в production; чтобы показать её в production, установите переменную в значение `'true'`.
+
 ## Функциональность
 
 - Герой-блок с 3D‑кубом, реагирующим на IntersectionObserver (паузит отрисовку вне вьюпорта).
