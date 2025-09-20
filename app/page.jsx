@@ -353,6 +353,10 @@ export default function Page() {
   const [firstFrameCount, setFirstFrameCount] = useState(0)
   const [glInfo, setGlInfo] = useState('')
   const [cbIsFunc, setCbIsFunc] = useState(false)
+  const [applyStatus, setApplyStatus] = useState({ state: 'idle', message: '' })
+  const [phoneError, setPhoneError] = useState('')
+
+  const PHONE_PATTERN = useMemo(() => /^\+?\d[\d\s().-]{9,}$/, [])
 
   useEffect(() => {
     setMounted(true)
@@ -389,6 +393,67 @@ export default function Page() {
     { label: 'Формат', value: lead.seats },
     { label: 'Локация', value: lead.venue },
   ]
+
+  const handlePhoneChange = (event) => {
+    const value = event.target.value.trim()
+    if (!value) {
+      setPhoneError('')
+      return
+    }
+    setPhoneError(PHONE_PATTERN.test(value) ? '' : 'Введите телефон в формате +7 999 123-45-67')
+  }
+
+  const handleApplySubmit = async (event) => {
+    event.preventDefault()
+    const form = event.currentTarget
+    const formData = new FormData(form)
+    const name = String(formData.get('name') || '').trim()
+    const email = String(formData.get('email') || '').trim()
+    const phone = String(formData.get('phone') || '').trim()
+    const comment = String(formData.get('comment') || '').trim()
+    const consent = formData.get('consent') === 'on'
+
+    if (!phone || !PHONE_PATTERN.test(phone)) {
+      setPhoneError('Введите телефон в формате +7 999 123-45-67')
+      setApplyStatus({ state: 'error', message: 'Проверьте номер телефона и попробуйте ещё раз.' })
+      return
+    }
+
+    if (!consent) {
+      setApplyStatus({ state: 'error', message: 'Для отправки заявки подтвердите согласие на обработку данных.' })
+      return
+    }
+
+    setPhoneError('')
+    setApplyStatus({ state: 'loading', message: '' })
+
+    try {
+      const response = await fetch('/api/apply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, phone, comment, consent }),
+      })
+      const result = await response.json().catch(() => ({}))
+
+      if (!response.ok || !result?.success) {
+        const errorMessage = result?.error || 'Не удалось отправить заявку. Попробуйте ещё раз.'
+        throw new Error(errorMessage)
+      }
+
+      form.reset()
+      setApplyStatus({
+        state: 'success',
+        message: 'Заявка отправлена! Мы свяжемся с вами в ближайшее время.',
+      })
+    } catch (error) {
+      const fallback = 'Не удалось отправить заявку. Попробуйте ещё раз.'
+      const extra = error?.message && !error.message.includes(fallback) ? ` ${error.message}` : ''
+      setApplyStatus({
+        state: 'error',
+        message: `${fallback}${extra}`.trim(),
+      })
+    }
+  }
 
   return (
     <div className="min-h-dvh bg-white text-neutral-900 selection:bg-black selection:text-white">
@@ -590,13 +655,8 @@ export default function Page() {
         <div className="grid gap-8 lg:grid-cols-[1.5fr_1fr]">
           <form
             className="grid gap-4 rounded-3xl border border-black/10 bg-white/90 p-6 shadow-sm"
-            onSubmit={(event) => {
-              event.preventDefault()
-              const form = event.currentTarget
-              const data = Object.fromEntries(new FormData(form))
-              alert(`Спасибо! Мы свяжемся по адресу ${data.email || '—'} и телефону ${data.phone || '—'}.`)
-              form.reset()
-            }}
+            onSubmit={handleApplySubmit}
+            noValidate
           >
             <label className="grid gap-2 text-sm">
               <span className="font-medium">ФИО</span>
@@ -624,9 +684,20 @@ export default function Page() {
                 name="phone"
                 type="tel"
                 placeholder="+7 (999) 123-45-67"
-                className="rounded-xl border border-black/10 px-4 py-2 text-sm shadow-sm outline-none transition focus:border-black/40 focus:ring-2 focus:ring-black/10"
+                required
+                pattern="^\\+?\\d[\\d\\s().-]{9,}$"
+                onChange={handlePhoneChange}
+                onBlur={handlePhoneChange}
+                aria-invalid={phoneError ? 'true' : 'false'}
+                aria-describedby={phoneError ? 'apply-phone-error' : undefined}
+                className={`rounded-xl border px-4 py-2 text-sm shadow-sm outline-none transition focus:border-black/40 focus:ring-2 focus:ring-black/10 ${phoneError ? 'border-red-400 focus:ring-red-100' : 'border-black/10'}`}
               />
             </label>
+            {phoneError ? (
+              <p id="apply-phone-error" className="-mt-2 text-xs text-red-600">
+                {phoneError}
+              </p>
+            ) : null}
             <label className="grid gap-2 text-sm">
               <span className="font-medium">Ваш запрос</span>
               <textarea
@@ -636,12 +707,32 @@ export default function Page() {
                 className="rounded-xl border border-black/10 px-4 py-2 text-sm shadow-sm outline-none transition focus:border-black/40 focus:ring-2 focus:ring-black/10"
               />
             </label>
+            <label className="flex items-start gap-2 text-xs text-black/60">
+              <input
+                name="consent"
+                type="checkbox"
+                required
+                className="mt-1 h-4 w-4 rounded border border-black/20"
+              />
+              <span>
+                Я согласен(а) на обработку персональных данных и получение информационных сообщений от РГСУ.
+              </span>
+            </label>
             <button
               type="submit"
-              className="mt-2 rounded-xl bg-black px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
+              disabled={applyStatus.state === 'loading'}
+              className={`mt-2 rounded-xl px-4 py-2 text-sm font-medium text-white transition ${applyStatus.state === 'loading' ? 'cursor-not-allowed bg-black/60' : 'bg-black hover:opacity-90'}`}
             >
-              Отправить заявку
+              {applyStatus.state === 'loading' ? 'Отправляем…' : 'Отправить заявку'}
             </button>
+            <div aria-live="polite" className="min-h-[1.25rem] text-sm">
+              {applyStatus.state === 'success' ? (
+                <p className="text-green-600">{applyStatus.message}</p>
+              ) : null}
+              {applyStatus.state === 'error' ? (
+                <p className="text-red-600">{applyStatus.message}</p>
+              ) : null}
+            </div>
             <p className="text-xs text-black/50">
               Нажимая кнопку, вы соглашаетесь на обработку персональных данных и получение информационных сообщений от РГСУ.
             </p>
